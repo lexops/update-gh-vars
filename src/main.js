@@ -69,9 +69,13 @@ async function run() {
               environment_name: environment_name,
               deployment_branch_policy: deployment_branch_policy
             })
-            core.info(`Environment ${environment_name} created/updated successfully.`)
+            core.info(
+              `Environment ${environment_name} created/updated successfully.`
+            )
           } catch (err) {
-            core.error(`Failed to create/update environment ${environment_name}: ${err.message}`)
+            core.error(
+              `Failed to create/update environment ${environment_name}: ${err.message}`
+            )
           }
 
           // Handle environment-scoped variables
@@ -95,7 +99,9 @@ async function run() {
                       name: name
                     })
 
-                  core.info(`Environment variable ${name} already exists. Updating...`)
+                  core.info(
+                    `Environment variable ${name} already exists. Updating...`
+                  )
 
                   // Log the API call to update the existing environment variable
                   core.debug(
@@ -108,11 +114,15 @@ async function run() {
                     name: name,
                     value: value
                   })
-                  core.info(`Environment variable ${name} updated successfully.`)
+                  core.info(
+                    `Environment variable ${name} updated successfully.`
+                  )
                 } catch (err) {
                   // If the variable doesn't exist (404), create it
                   if (err.status === 404) {
-                    core.info(`Environment variable ${name} not found. Creating...`)
+                    core.info(
+                      `Environment variable ${name} not found. Creating...`
+                    )
 
                     // Log the API call to create a new environment variable
                     core.debug(
@@ -125,7 +135,9 @@ async function run() {
                       name: name,
                       value: value
                     })
-                    core.info(`Environment variable ${name} created successfully.`)
+                    core.info(
+                      `Environment variable ${name} created successfully.`
+                    )
                   } else {
                     core.error(
                       `Failed to fetch/update environment variable ${name}: ${err.message}`
@@ -133,7 +145,9 @@ async function run() {
                   }
                 }
               } catch (err) {
-                core.error(`Failed to create/update environment variable ${name}: ${err.message}`)
+                core.error(
+                  `Failed to create/update environment variable ${name}: ${err.message}`
+                )
               }
             }
           }

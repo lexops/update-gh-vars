@@ -1,19 +1,42 @@
-repos:
-  - name: lexops/update-gh-vars
-    environments:
-      - environment_name: staging
-        deployment_branch_policy:
-          protected_branches:
-            - main
-          custom_branch_policies:
-            - ref: 'feature/*'
-        variables:
-          - name: STAGING_FOO
-            value: foo_value
-          - name: STAGING_BAR
-            value: bar_value
-    variables:
-      - name: FOO
-        value: bar
-      - name: BAR
-        value: baz
+name: Example Workflow
+
+on:
+  push:
+    branches:
+      - main
+
+permissions: write-all
+
+jobs:
+  update-variables:
+    name: Update GitHub Variables
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Enable debug logging
+        run: echo "ACTIONS_STEP_DEBUG=true" >> $GITHUB_ENV
+      - name: Update GitHub Variables
+        id: update-gh-vars
+        uses: lexops/update-gh-vars@main
+        with:
+          token: ${{ secrets.PAT }}
+          yaml-config: |
+            repos:
+            - name: lexops/update-gh-vars
+              environments:
+                - environment_name: staging
+                  deployment_branch_policy:
+                    protected_branches:
+                      - main
+                    custom_branch_policies:
+                      - ref: 'feature/*'
+                  variables:
+                    - name: STAGING_FOO
+                      value: foo_value
+                    - name: STAGING_BAR
+                      value: bar_value
+              variables:
+                - name: FOO
+                  value: bar
+                - name: BAR
+                  value: baz
