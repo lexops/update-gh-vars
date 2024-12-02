@@ -34020,7 +34020,10 @@ async function run() {
         core.info(`Processing variable: ${name}`)
 
         try {
-          // Attempt to get the repository variable to check if it exists
+          // Log the API call to get the existing variable
+          core.debug(
+            `Calling getRepoVariable API for ${owner}/${repoName}: ${name}`
+          )
           try {
             const { data: existingVar } =
               await octokit.rest.actions.getRepoVariable({
@@ -34031,7 +34034,10 @@ async function run() {
 
             core.info(`Variable ${name} already exists. Updating...`)
 
-            // If it exists, update the variable
+            // Log the API call to update the existing variable
+            core.debug(
+              `Calling updateRepoVariable API for ${owner}/${repoName}: ${name} with value ${value}`
+            )
             await octokit.rest.actions.updateRepoVariable({
               owner: owner,
               repo: repoName,
@@ -34043,6 +34049,11 @@ async function run() {
             // If the variable doesn't exist (404), create it
             if (err.status === 404) {
               core.info(`Variable ${name} not found. Creating...`)
+
+              // Log the API call to create a new variable
+              core.debug(
+                `Calling createRepoVariable API for ${owner}/${repoName}: ${name} with value ${value}`
+              )
               await octokit.rest.actions.createRepoVariable({
                 owner: owner,
                 repo: repoName,
