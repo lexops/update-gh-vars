@@ -7,20 +7,14 @@ const github = require('@actions/github')
  */
 async function run() {
   try {
-    // The `who-to-greet` input is defined in action metadata file
-    const whoToGreet = core.getInput('who-to-greet', { required: true })
-    core.info(`Hello, ${whoToGreet}!`)
+    const token = core.getInput('token') || process.env.GITHUB_TOKEN
+    const octokit = github.getOctokit(token)
 
-    // Get the current time and set as an output
-    const time = new Date().toTimeString()
-    core.setOutput('time', time)
+    if (!token) {
+      throw new Error('No github token provided')
+    }
 
-    // Output the payload for debugging
-    core.info(
-      `The event payload: ${JSON.stringify(github.context.payload, null, 2)}`
-    )
   } catch (error) {
-    // Fail the workflow step if an error occurs
     core.setFailed(error.message)
   }
 }
