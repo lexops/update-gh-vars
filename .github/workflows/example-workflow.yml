@@ -5,9 +5,7 @@ on:
     branches:
       - main
 
-permissions:
-  actions: read
-  contents: read
+permissions: write-all
 
 jobs:
   update-variables:
