@@ -13,7 +13,6 @@ async function run() {
     if (!token) {
       throw new Error('No github token provided')
     }
-
   } catch (error) {
     core.setFailed(error.message)
   }
