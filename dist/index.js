@@ -33988,15 +33988,16 @@ async function run() {
 
     // Iterate over each repository and its variables
     for (const repo of config.repos) {
-      const { owner, repo: repoName } = github.context.repo
+      const { name } = repo
+      const [owner, repoName] = name.split('/') // Split the name into owner and repo
+
+      console.log(`Processing repository: ${repoName} (Owner: ${owner})`)
 
       // Ensure the repository is valid
       const { data: repository } = await octokit.rest.repos.get({
         owner: owner,
         repo: repoName
       })
-
-      console.log(`Processing repository: ${repoName}`)
 
       // Iterate over the variables and create or update them
       for (const variable of repo.variables) {
