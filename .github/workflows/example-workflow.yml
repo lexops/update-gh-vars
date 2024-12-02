@@ -26,10 +26,8 @@ jobs:
               environments:
                 - environment_name: staging
                   deployment_branch_policy:
-                    protected_branches:
-                      - main
-                    custom_branch_policies:
-                      - ref: 'feature/*'
+                    protected_branches: true
+                    custom_branch_policies: true
                   variables:
                     - name: STAGING_FOO
                       value: foo_value
