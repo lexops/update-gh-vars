@@ -33983,25 +33983,41 @@ async function run() {
       throw new Error('No config YAML provided')
     }
 
+    core.info('YAML configuration received. Parsing it...')
     // Parse the YAML string
     const config = yaml.load(yamlConfig)
+
+    core.info('Parsed YAML configuration:')
+    core.debug(JSON.stringify(config, null, 2)) // This will print the full config for debugging
 
     // Iterate over each repository and its variables
     for (const repo of config.repos) {
       const { name } = repo
       const [owner, repoName] = name.split('/') // Split the name into owner and repo
 
-      console.log(`Processing repository: ${repoName} (Owner: ${owner})`)
+      core.info(`Processing repository ${owner}/${repoName}`)
 
       // Ensure the repository is valid
-      const { data: repository } = await octokit.rest.repos.get({
-        owner: owner,
-        repo: repoName
-      })
+      try {
+        const { data: repository } = await octokit.rest.repos.get({
+          owner: owner,
+          repo: repoName
+        })
+        core.info(
+          `Repository ${owner}/${repoName} found: ${repository.full_name}`
+        )
+      } catch (err) {
+        core.warning(
+          `Repository ${owner}/${repoName} not found: ${err.message}`
+        )
+        continue
+      }
 
       // Iterate over the variables and create or update them
       for (const variable of repo.variables) {
         const { name, value } = variable
+
+        core.info(`Processing variable: ${name}`)
 
         try {
           // Attempt to get the repository variable to check if it exists
@@ -34013,6 +34029,8 @@ async function run() {
                 name: name
               })
 
+            core.info(`Variable ${name} already exists. Updating...`)
+
             // If it exists, update the variable
             await octokit.rest.actions.updateRepoVariable({
               owner: owner,
@@ -34020,34 +34038,31 @@ async function run() {
               name: name,
               value: value
             })
-            console.log(`Variable ${name} updated successfully.`)
+            core.info(`Variable ${name} updated successfully.`)
           } catch (err) {
             // If the variable doesn't exist (404), create it
             if (err.status === 404) {
+              core.info(`Variable ${name} not found. Creating...`)
               await octokit.rest.actions.createRepoVariable({
                 owner: owner,
                 repo: repoName,
                 name: name,
                 value: value
               })
-              console.log(`Variable ${name} created successfully.`)
+              core.info(`Variable ${name} created successfully.`)
             } else {
-              console.error(
-                `Failed to fetch/update variable ${name}:`,
-                err.message
+              core.error(
+                `Failed to fetch/update variable ${name}: ${err.message}`
               )
             }
           }
         } catch (err) {
-          console.error(
-            `Failed to create/update variable ${name}:`,
-            err.message
-          )
+          core.error(`Failed to create/update variable ${name}: ${err.message}`)
         }
       }
     }
   } catch (error) {
-    core.setFailed(error.message)
+    core.setFailed(`Action failed: ${error.message}`)
   }
 }
 
