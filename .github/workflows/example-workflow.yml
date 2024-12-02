@@ -19,7 +19,7 @@ jobs:
         id: update-gh-vars
         uses: lexops/update-gh-vars@main
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT }}
           yaml-config: |
             repos:
               - name: lexops/update-gh-vars
