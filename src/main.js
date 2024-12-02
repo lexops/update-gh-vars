@@ -30,7 +30,7 @@ async function run() {
 
     // Iterate over each repository and its variables
     for (const repo of config.repos) {
-      const { name } = repo
+      const { name, environments } = repo
       const [owner, repoName] = name.split('/') // Split the name into owner and repo
 
       core.info(`Processing repository ${owner}/${repoName}`)
@@ -51,11 +51,100 @@ async function run() {
         continue
       }
 
-      // Iterate over the variables and create or update them
+      // Handle environment creation or update
+      if (environments) {
+        for (const environment of environments) {
+          const { environment_name, deployment_branch_policy } = environment
+
+          core.info(`Processing environment: ${environment_name}`)
+
+          try {
+            // Log the API call to create or update the environment
+            core.debug(
+              `Calling createOrUpdateEnvironment API for ${owner}/${repoName}: ${environment_name}`
+            )
+            await octokit.rest.repos.createOrUpdateEnvironment({
+              owner: owner,
+              repo: repoName,
+              environment_name: environment_name,
+              deployment_branch_policy: deployment_branch_policy
+            })
+            core.info(`Environment ${environment_name} created/updated successfully.`)
+          } catch (err) {
+            core.error(`Failed to create/update environment ${environment_name}: ${err.message}`)
+          }
+
+          // Handle environment-scoped variables
+          if (environment.variables) {
+            for (const variable of environment.variables) {
+              const { name, value } = variable
+
+              core.info(`Processing environment variable: ${name}`)
+
+              try {
+                // Log the API call to get the existing environment variable
+                core.debug(
+                  `Calling getEnvironmentVariable API for ${owner}/${repoName}: ${environment_name} - ${name}`
+                )
+                try {
+                  const { data: existingVar } =
+                    await octokit.rest.actions.getEnvironmentVariable({
+                      owner: owner,
+                      repo: repoName,
+                      environment_name: environment_name,
+                      name: name
+                    })
+
+                  core.info(`Environment variable ${name} already exists. Updating...`)
+
+                  // Log the API call to update the existing environment variable
+                  core.debug(
+                    `Calling updateEnvironmentVariable API for ${owner}/${repoName}: ${environment_name} - ${name} with value ${value}`
+                  )
+                  await octokit.rest.actions.updateEnvironmentVariable({
+                    owner: owner,
+                    repo: repoName,
+                    environment_name: environment_name,
+                    name: name,
+                    value: value
+                  })
+                  core.info(`Environment variable ${name} updated successfully.`)
+                } catch (err) {
+                  // If the variable doesn't exist (404), create it
+                  if (err.status === 404) {
+                    core.info(`Environment variable ${name} not found. Creating...`)
+
+                    // Log the API call to create a new environment variable
+                    core.debug(
+                      `Calling createEnvironmentVariable API for ${owner}/${repoName}: ${environment_name} - ${name} with value ${value}`
+                    )
+                    await octokit.rest.actions.createEnvironmentVariable({
+                      owner: owner,
+                      repo: repoName,
+                      environment_name: environment_name,
+                      name: name,
+                      value: value
+                    })
+                    core.info(`Environment variable ${name} created successfully.`)
+                  } else {
+                    core.error(
+                      `Failed to fetch/update environment variable ${name}: ${err.message}`
+                    )
+                  }
+                }
+              } catch (err) {
+                core.error(`Failed to create/update environment variable ${name}: ${err.message}`)
+              }
+            }
+          }
+        }
+      }
+
+      // Iterate over the repository variables (as before)
       for (const variable of repo.variables) {
         const { name, value } = variable
 
-        core.info(`Processing variable: ${name}`)
+        core.info(`Processing repository variable: ${name}`)
 
         try {
           // Log the API call to get the existing variable
