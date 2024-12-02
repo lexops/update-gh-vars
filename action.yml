@@ -6,6 +6,9 @@ inputs:
   token:
     description: GitHub Access Token
     required: false
+  yaml-config:
+    description: YAML configuration for updating GitHub variables
+    required: true
 
 runs:
   using: node20
