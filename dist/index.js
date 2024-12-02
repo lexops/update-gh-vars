@@ -33978,13 +33978,13 @@ async function run() {
     }
 
     // Get the YAML content passed via the workflow input
-    const configYaml = core.getInput('config-yaml')
-    if (!configYaml) {
+    const yamlConfig = core.getInput('yaml-config')
+    if (!yamlConfig) {
       throw new Error('No config YAML provided')
     }
 
     // Parse the YAML string
-    const config = yaml.load(configYaml)
+    const config = yaml.load(yamlConfig)
 
     // Iterate over each repository and its variables
     for (const repo of config.repos) {
