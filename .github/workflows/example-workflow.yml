@@ -10,8 +10,8 @@ permissions:
   contents: read
 
 jobs:
-  say-hello:
-    name: Say Hello
+  update-variables:
+    name: Update GitHub Variables
     runs-on: ubuntu-latest
 
     steps:
@@ -20,3 +20,11 @@ jobs:
         uses: lexops/update-gh-vars@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          yaml-config: |
+            repos:
+              - name: lexops/update-gh-vars
+                variables:
+                  - name: FOO
+                    value: bar
+                  - name: BAR
+                    value: baz
